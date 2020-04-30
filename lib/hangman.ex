@@ -19,6 +19,10 @@ defmodule Hangman do
     opts = [strategy: :one_for_one, name: Hangman.Supervisor]
     Supervisor.start_link(children, opts)
 
+    IO.puts ""
+    IO.puts ""
+
+
     length = IO.gets("Length of word? ")
       |> String.trim
       |> String.to_integer
@@ -43,15 +47,17 @@ defmodule Hangman do
   end
 
   def play(count) when count <= 0 do
-    IO.puts "You lost!"
     IO.puts "guessed: [#{Game.guessed}]"
     IO.puts "#{Game.pattern}"
     IO.puts "Word was: #{Game.winning_word}"
+    IO.puts ""
+    IO.puts "Sorry you lose"
   end
   def play(_count) do
     IO.puts ""
     IO.puts "guesses left: #{Game.guesses_remaining}"
     IO.puts "words left: #{Game.word_count}"
+    #IO.puts "guessed: [#{Enum.sort(Game.guessed)}]"
     IO.puts "guessed: [#{Game.guessed}]"
     IO.puts "#{Game.pattern}"
 
@@ -62,9 +68,17 @@ defmodule Hangman do
       play Game.guesses_remaining
     else
       Game.make_guess guess
-      play Game.guesses_remaining
+
+      if Game.pattern =~ "-" do
+        play Game.guesses_remaining
+      else
+        IO.puts ""
+        IO.puts ""#{Game.winning_word}"
+        IO.puts "You won!"
+        IO.puts ""
+        IO.puts ""
+        IO.puts ""
+      end
     end
-
   end
-
 end
