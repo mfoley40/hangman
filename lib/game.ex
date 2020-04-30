@@ -190,14 +190,15 @@ defmodule Game do
 
   @impl true
   def handle_call({:get_winning_word}, _from, %{words: words, even_guesses: even_guesses} = state) do
-    word = if even_guesses do
-      [h | _t] = words
-      h
-    else
-      List.last(words)
-    end
-#    rand = :random.uniform(length(words)) - 1
-#    Logger.info "rand: #{rand}"
+    # word = if even_guesses do
+    #   [h | _t] = words
+    #   h
+    # else
+    #   List.last(words)
+    # end
+    rand = :random.uniform(length(words)) - 1
+    word = Enum.at(words, rand)
+    # Logger.info "rand: #{rand}"
 
     {:reply, word, state}
   end
@@ -224,10 +225,10 @@ defmodule Game do
   #</editor-fold>
 
 
+  #<editor-fold desc='Private Methods'>
   defp map_words words, pattern, guess do
     words
     |> Enum.reduce(%{}, fn(x, acc) ->
-#      word_pattern = String.to_atom(make_pattern pattern, x, guess)
       word_pattern = make_pattern pattern, x, guess
       case acc[word_pattern] do
         nil -> Map.put(acc, word_pattern, [x])
@@ -257,6 +258,8 @@ defmodule Game do
     end)
     String.trim(s)
   end
+  #</editor-fold>
+
 
   #<editor-fold desc='terminate Functions'>
   # handle the trapped exit call
