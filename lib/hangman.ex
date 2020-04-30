@@ -1,6 +1,8 @@
 defmodule Hangman do
   @moduledoc """
   The application entry point for `Hangman`.
+
+  Run with "mix run"
   """
   use Application
   use Supervisor
@@ -9,7 +11,6 @@ defmodule Hangman do
 
   @impl true
   def start(_type, _args) do
-    Logger.info "#{__MODULE__} Hello World"
 
     children = [
       worker(Game.Supervisor, [])
@@ -18,22 +19,34 @@ defmodule Hangman do
     opts = [strategy: :one_for_one, name: Hangman.Supervisor]
     Supervisor.start_link(children, opts)
 
-    Game.Supervisor.start
+    length = IO.gets("Length of word? ")
+      |> String.trim
+      |> String.to_integer
 
-    Logger.info "#{__MODULE__} words left: #{Game.word_count}"
+    guesses = IO.gets("Number of guesses? ")
+      |> String.trim
+      |> String.to_integer
 
-#    guess = IO.gets "Next guess? "
-#    IO.puts String.trim(guess)
+    Game.Supervisor.start [dictionary_file: "dictionary.txt",
+                          word_length: length,
+                          number_of_guesses: guesses]
 
     play Game.guesses_remaining
 
-    {:ok, self}
+    {:ok, self()}
+  end
+
+  @impl true
+  def init(args) do
+     Logger.info "#{__MODULE__} Initing args: #{inspect args}"
+     {:ok, []}
   end
 
   def play(count) when count <= 0 do
     IO.puts "You lost!"
     IO.puts "guessed: [#{Game.guessed}]"
     IO.puts "#{Game.pattern}"
+    IO.puts "Word was: #{Game.winning_word}"
   end
   def play(_count) do
     IO.puts ""
