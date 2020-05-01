@@ -1,8 +1,11 @@
 defmodule HangmanTest do
+  @moduledoc """
+  run with "mix test --no-start"
+  """
   use ExUnit.Case
   doctest Hangman
 
-  test "greets the world" do
-    assert Hangman.hello() == :world
+  test "dumb test" do
+    assert 1 == 1
   end
 end
