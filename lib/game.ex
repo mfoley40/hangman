@@ -53,7 +53,7 @@ end
 #<editor-fold desc='Game Module'>
 defmodule Game do
   @moduledoc """
-  The game logic for `Hangman`.
+  The game logic for `Evil Hangman`.
   """
   use GenServer
   require Logger
@@ -69,8 +69,7 @@ defmodule Game do
        :word_length,        # The length of the word to be guessed
        :pattern,            # The pattern of the word and guesses
        :guesses,            # The number of guesses left before loosing
-       :guessed,            # Letters which have been guessed
-       :even_guesses        # True if the number of guesses allowed is even
+       :guessed            # Letters which have been guessed
    ]
 
    defimpl String.Chars do
@@ -112,6 +111,23 @@ defmodule Game do
     end
   end
 
+
+  #<editor-fold desc='Init'>
+  @doc """
+  Game initialization.
+
+  The args passed to the function is a Keyword list with the
+  game's configuration settings. The dictionary must contain:
+
+      :dictionary_file    The name of the file containing the word list,
+                          one word per line in the text file
+      :word_length        The length of the word to be guessed
+      :number_of_guesses  The number of guesses which are allowed before
+                          the game is lost.
+
+  There isn't ANY error checking on these settings. Wrong values will
+  crash the game.
+  """
   @impl true
   def init(args) do
      #Logger.info "#{__MODULE__} Initing args: #{inspect args}"
@@ -130,8 +146,6 @@ defmodule Game do
         if number_of_guesses == nil do
           throw :no_number_of_guesses
         end
-
-        even_guesses = rem(number_of_guesses, 2) == 0
 
      words = case File.read(dictionary_file) do
        {:ok, body}      -> match_words(body, word_length)
@@ -154,33 +168,79 @@ defmodule Game do
       pattern: pattern,
       word_length: word_length,
       guesses: number_of_guesses,
-      even_guesses: even_guesses,
       guessed: []
     }
      {:ok, state}
   end
+  #</editor-fold>
+
 
   #<editor-fold desc='Client API'>
+  @doc """
+  Return the number of potential words still available
+  to be the solution for the game.
+  """
   def word_count pid \\ :game do
     GenServer.call pid, {:get_word_count}
   end
 
+  @doc """
+  Return the "pattern" for the possible solution word
+  and the guesses already made. In the pattern, a '-'
+  character represents an unguessed spot in the word.
+  If a position has been guessed, that letter is in the patter.
+
+  Example:
+  If the word is "apple" and the current guesses are 'a' and 'e'
+  the pattern is:
+
+  "a - - - e"
+
+  This is a synchronise call.
+  """
   def pattern pid \\ :game do
     GenServer.call pid, {:get_pattern}
   end
 
+  @doc """
+  Return the list of guessed letters.
+
+  This is a synchronise call.
+  """
   def guessed pid \\ :game do
     GenServer.call pid, {:get_guessed}
   end
 
+  @doc """
+  Return the number of guesses remaining until the game is lost.
+
+  This is a synchronise call.
+  """
   def guesses_remaining pid \\ :game do
     GenServer.call pid, {:get_guesses_remaining}
   end
 
+  @doc """
+  Perform a guess with the given character, guess.
+
+  Return the updated pattern for the potential solution word.
+
+  This is a synchronise call.
+  """
   def make_guess guess, pid \\ :game do
     GenServer.call pid, {:guess, guess}
   end
 
+  @doc """
+  Return the winning word. This function is intended to be
+  used after the game is over to recover the solution if the game
+  was lost. However, that isn't enforced. The winning word
+  is chosen at random from the set of possible solutions. Thus,
+  calling this function multiple times could lead to different
+  words being returned.
+
+  This is a synchronise call.
+  """
   def winning_word pid \\ :game do
     GenServer.call pid, {:get_winning_word}
   end
@@ -209,13 +269,10 @@ defmodule Game do
   end
 
   @impl true
-  def handle_call({:get_winning_word}, _from, %{words: words, even_guesses: even_guesses} = state) do
-    # word = if even_guesses do
-    #   [h | _t] = words
-    #   h
-    # else
-    #   List.last(words)
-    # end
+  def handle_call({:get_winning_word}, _from, %{words: words} = state) do
+    #
+    # The winning word is chosen at random from the possible remaining solutions.
+    #
     rand = :random.uniform(length(words)) - 1
     word = Enum.at(words, rand)
     # Logger.info "rand: #{rand}"
@@ -226,11 +283,21 @@ defmodule Game do
   @impl true
   def handle_call({:guess, guess}, _from, %{words: words, pattern: pattern, guesses: guesses, guessed: guessed} = state) do
 
+    #
+    # Add the guess to the list of guessed words.
+    # NOTE: The list if formatted for output here, but that probably should be
+    #       done in a client, or getter function, and only have the list of
+    #       guessed letters be that.
     updated_guessed = case length(guessed) do
       0 -> [guess]
       _ -> guessed ++ [", ", guess]
     end
 
+    #
+    # Create a map of potential solutions. The element in the map with
+    # the most possible solutions is chosen as the next set of potential
+    # solutions and the pattern for that item becomes the word pattern.
+    #
     map = map_words words, pattern, guess
     {p, w} = Enum.reduce(map, {"", []}, fn({k, v}, {acck, accv}) ->
       if length(accv) < length(v) do
@@ -240,16 +307,31 @@ defmodule Game do
       end
     end)
 
+    #
+    # If the guessed letter isn't in the solution, a guess is used up.
+    # decrement the guesses cound.
+    #
     updated_guesses = case guess in String.split(p, "") do
       :true -> guesses
       :false -> guesses - 1
     end
-    {:reply, length(w), %{state | words: w, pattern: p, guesses: updated_guesses, guessed: updated_guessed}}
+
+    #
+    # Return the new patter and update state.
+    #
+    {:reply, p, %{state | words: w, pattern: p, guesses: updated_guesses, guessed: updated_guessed}}
   end
   #</editor-fold>
 
 
   #<editor-fold desc='Private Methods'>
+  #
+  # Create a map from the set of potential word solutions. Each item
+  # in the map has the word pattern as the key and a list of words
+  # which conform to that pattern as the value.
+  #
+  # Return the created map.
+  #
   defp map_words words, pattern, guess do
     words
     |> Enum.reduce(%{}, fn(x, acc) ->
@@ -261,6 +343,13 @@ defmodule Game do
     end)
   end
 
+  #
+  # Filter words in the given list of words, contents, which are
+  # of the given length.
+  #
+  # Return the filtered list containing all the words in contents
+  # of the given length.
+  #
   defp match_words contents, length do
     words = contents
     |> String.split("\n", trim: true)
@@ -270,6 +359,17 @@ defmodule Game do
     end)
   end
 
+  #
+  # Make the pattern for the given word.
+  #
+  # Each character in the word is compared to the given guess.
+  # If they match, the guess is added to the patter.
+  # If they don't match, whatever was in the existing, given pattern,
+  # are added to the new patter. Thus, previous guesses will remain
+  # in the patter.
+  #
+  # Return the updated pattern for the given word.
+  #
   defp make_pattern(pattern, word, guess)
   when is_binary(pattern) and is_binary(word) and is_binary(guess) do
     {s, _} = String.graphemes(word)
@@ -286,13 +386,19 @@ defmodule Game do
 
 
   #<editor-fold desc='terminate Functions'>
+  #
   # handle the trapped exit call
+  #
+  # Not really used here.
+  #
   @impl true
   def terminate(:shutdown, _state) do
-    Logger.warn("#{__MODULE__} shutdown terminate")
     :normal
   end
 
+  #
+  # handle the trapped exit call
+  #
   @impl true
   def terminate(reason, state) do
     Logger.error("#{__MODULE__} terminate reason: #{inspect reason} state #{inspect state}")
