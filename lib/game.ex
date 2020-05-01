@@ -2,7 +2,10 @@
 defmodule Game.Supervisor do
   @moduledoc """
   The Supervisor of the Game logic module
+
+  © Innovative Yachtter Solutions, 2020
   """
+  @moduledoc since: "1.0.0"
 
   use Supervisor
   require Logger
@@ -55,6 +58,8 @@ defmodule Game do
   @moduledoc """
   The game logic for `Evil Hangman`.
   """
+  @moduledoc since: "1.0.0"
+
   use GenServer
   require Logger
 
@@ -128,7 +133,9 @@ defmodule Game do
   There isn't ANY error checking on these settings. Wrong values will
   crash the game.
   """
+  @doc since: "1.0.0"
   @impl true
+  def init(argument_dictionary)
   def init(args) do
      #Logger.info "#{__MODULE__} Initing args: #{inspect args}"
 
@@ -199,6 +206,7 @@ defmodule Game do
 
   This is a synchronise call.
   """
+  @doc since: "1.0.0"
   def pattern pid \\ :game do
     GenServer.call pid, {:get_pattern}
   end
@@ -208,6 +216,7 @@ defmodule Game do
 
   This is a synchronise call.
   """
+  @doc since: "1.0.0"
   def guessed pid \\ :game do
     GenServer.call pid, {:get_guessed}
   end
@@ -228,6 +237,7 @@ defmodule Game do
 
   This is a synchronise call.
   """
+  @doc since: "1.0.0"
   def make_guess guess, pid \\ :game do
     GenServer.call pid, {:guess, guess}
   end
@@ -242,6 +252,7 @@ defmodule Game do
 
   This is a synchronise call.
   """
+  @doc since: "1.0.0"
   def winning_word pid \\ :game do
     GenServer.call pid, {:get_winning_word}
   end

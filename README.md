@@ -8,32 +8,27 @@ outcomes is chosen such that the largest number of words remain. If the word
 isn't guessed in the allotted number of guesses, a random word is selected
 from the remaining list of possible solutions.
 
-To run the game:
+# NOTES:
+This was done as an educational project to help learn Elixir and it's tools.
+As such, there are many things lacking from what would be a "real" application.
 
-  mix run
-
-To run the tests:
-
-  mix test --no-start
-
-# NOTE:
 The game doesn't perform any input validation. Thus, it is easy to crash the
 game by entering characters when numbers are expected. Similarly, entering
 multiple characters or a number for a letter guess will not crash the game,
 but won't record a correct guess and will lower the guesses remaining count.
 
+Only a single GenServer supported.
 
-## Installation
+The console I/O is very primitive.
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `hangman` to your list of dependencies in `mix.exs`:
+## To run the game:
+```
+  mix run
+```
 
-```elixir
-def deps do
-  [
-    {:hangman, "~> 0.1.0"}
-  ]
-end
+## To run the tests:
+```
+  mix test --no-start
 ```
 
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)

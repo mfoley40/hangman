@@ -8,8 +8,13 @@ defmodule Hangman do
 
   Create docs with:
 
-    ex_doc "Evil Hangman" "0.0.1" /Users/mikefoley/projects/hangman/_build/dev/lib/hangman/ebin -m "Hangman" -u "https://github.com/mfoley40/hangman.git"
+    mix docs
+
+  © Innovative Yachtter Solutions, 2020
+
   """
+  @moduledoc since: "1.0.0"
+
   use Application
   use Supervisor
   require Logger
