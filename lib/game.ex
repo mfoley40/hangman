@@ -25,6 +25,14 @@ defmodule Game.Supervisor do
     end
   end
 
+  @doc """
+  Stop the child process
+  """
+  def stop do
+    pid = Process.whereis(:game)
+    Supervisor.terminate_child(@name, pid)
+  end
+
   @impl true
   def init(_args) do
     #Logger.info("#{__MODULE__} Init args #{inspect args}")
