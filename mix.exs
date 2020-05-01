@@ -4,7 +4,7 @@ defmodule Hangman.MixProject do
   def project do
     [
       app: :hangman,
-      version: "0.1.0",
+      version: "1.0.0",
       elixir: "~> 1.10",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -13,7 +13,8 @@ defmodule Hangman.MixProject do
       name: "Evil Hangman",
       source_url: "https://github.com/mfoley40/hangman",
       description: description(),
-      licenses: "MIT",
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/mfoley40/hangman"},
       docs: [
         extras: ["README.md"]
       ]
