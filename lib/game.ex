@@ -190,9 +190,10 @@ defmodule Game do
   character represents an unguessed spot in the word.
   If a position has been guessed, that letter is in the patter.
 
-  Example:
+  ### Example
+
   If the word is "apple" and the current guesses are 'a' and 'e'
-  the pattern is:
+  the pattern is
 
   "a - - - e"
 
