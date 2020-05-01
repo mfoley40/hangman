@@ -55,9 +55,11 @@ defmodule Hangman do
   def play(count) when count <= 0 do
     IO.puts "guessed: [#{Game.guessed}]"
     IO.puts "#{Game.pattern}"
-    IO.puts "Word was: #{Game.winning_word}"
     IO.puts ""
     IO.puts "Sorry you lose"
+    IO.puts "Word was: #{Game.winning_word}"
+    IO.puts ""
+    IO.puts ""
   end
   def play(_count) do
     IO.puts ""
