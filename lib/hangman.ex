@@ -2,7 +2,13 @@ defmodule Hangman do
   @moduledoc """
   The application entry point for `Hangman`.
 
-  Run with "mix run"
+  Run with:
+
+    mix run
+
+  Create docs with:
+
+    ex_doc "Evil Hangman" "0.0.1" /Users/mikefoley/projects/hangman/_build/dev/lib/hangman/ebin -m "Hangman" -u "https://github.com/mfoley40/hangman.git"
   """
   use Application
   use Supervisor
