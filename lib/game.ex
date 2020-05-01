@@ -81,6 +81,17 @@ defmodule Game do
     GenServer.start __MODULE__, args, [name: id]
   end
 
+
+  @doc """
+  Start our server.
+
+  ### Example
+
+  We assert that start link gives :ok, pid
+
+      iex> Game.start_link
+      {:ok, pid}
+  """
   def start_link(args \\ []) do
     #Logger.info "#{__MODULE__} start_link args: #{inspect args}"
     id = Keyword.get args, :id, :game
@@ -141,28 +152,28 @@ defmodule Game do
   end
 
   #<editor-fold desc='Client API'>
-  def word_count do
-    GenServer.call :game, {:get_word_count}
+  def word_count pid \\ :game do
+    GenServer.call pid, {:get_word_count}
   end
 
-  def pattern do
-    GenServer.call :game, {:get_pattern}
+  def pattern pid \\ :game do
+    GenServer.call pid, {:get_pattern}
   end
 
-  def guessed do
-    GenServer.call :game, {:get_guessed}
+  def guessed pid \\ :game do
+    GenServer.call pid, {:get_guessed}
   end
 
-  def guesses_remaining do
-    GenServer.call :game, {:get_guesses_remaining}
+  def guesses_remaining pid \\ :game do
+    GenServer.call pid, {:get_guesses_remaining}
   end
 
-  def make_guess guess do
-    GenServer.call :game, {:guess, guess}
+  def make_guess guess, pid \\ :game do
+    GenServer.call pid, {:guess, guess}
   end
 
-  def winning_word do
-    GenServer.call :game, {:get_winning_word}
+  def winning_word pid \\ :game do
+    GenServer.call pid, {:get_winning_word}
   end
   #</editor-fold>
 
@@ -220,7 +231,11 @@ defmodule Game do
       end
     end)
 
-    {:reply, length(w), %{state | words: w, pattern: p, guesses: guesses - 1, guessed: updated_guessed}}
+    updated_guesses = case guess in String.split(p, "") do
+      :true -> guesses
+      :false -> guesses - 1
+    end
+    {:reply, length(w), %{state | words: w, pattern: p, guesses: updated_guesses, guessed: updated_guessed}}
   end
   #</editor-fold>
 
@@ -246,7 +261,7 @@ defmodule Game do
     end)
   end
 
-  def make_pattern(pattern, word, guess)
+  defp make_pattern(pattern, word, guess)
   when is_binary(pattern) and is_binary(word) and is_binary(guess) do
     {s, _} = String.graphemes(word)
     |> Enum.reduce({"", pattern <> " "}, fn(c, {acc, p}) ->

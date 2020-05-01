@@ -64,6 +64,8 @@ defmodule Hangman do
     guess = String.trim(IO.gets "Next guess? ")
 
     if guess in Game.guessed do
+      IO.puts ""
+      IO.puts ""
       IO.puts "#{guess} already guessed. Try again!"
       play Game.guesses_remaining
     else
@@ -73,7 +75,7 @@ defmodule Hangman do
         play Game.guesses_remaining
       else
         IO.puts ""
-        IO.puts ""#{Game.winning_word}"
+        IO.puts "#{Game.winning_word}"
         IO.puts "You won!"
         IO.puts ""
         IO.puts ""
