@@ -134,6 +134,7 @@ defmodule Game do
      pattern = Enum.reduce(1..word_length, "", fn(_x, acc) ->
        acc <> "- "
      end)
+     |> String.trim
 
     #
     # Register to get a terminate callback when shutting down
