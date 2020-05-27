@@ -141,17 +141,17 @@ defmodule Game do
 
      dictionary_file = Keyword.get args, :dictionary_file, nil
       if dictionary_file == nil do
-        raise :no_dictionary_file
+        raise "no_dictionary_file"
       end
 
       word_length = Keyword.get args, :word_length, nil
        if word_length == nil do
-         raise :no_word_length
+         raise "no_word_length"
        end
 
        number_of_guesses = Keyword.get args, :number_of_guesses, nil
         if number_of_guesses == nil do
-          raise :no_number_of_guesses
+          raise "no_number_of_guesses"
         end
 
      words = case File.read(dictionary_file) do
